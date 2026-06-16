@@ -1,0 +1,27 @@
+# PowerShell
+*.ps1~
+*.psm1~
+
+# Generated files
+Output/
+GeneratedScripts/
+logs/
+*.log
+
+# Windows
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp files
+Temp/
+temp/
+
+# User-specific
+*.local
