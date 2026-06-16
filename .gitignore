@@ -25,3 +25,9 @@ temp/
 
 # User-specific
 *.local
+
+# Exports folder
+exports/
+
+# Local project memory bank
+memory-bank/
