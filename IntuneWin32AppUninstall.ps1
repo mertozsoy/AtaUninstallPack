@@ -31,6 +31,10 @@ Creates Intune detection and remediation scripts for application uninstallation.
 
 #requires -version 5.1
 
+# UTF-8 Support for Emoji/Unicode in PowerShell 5.1
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+
 <#
 .SCRIPT INFO
     Author   : Mert Ozsoy
@@ -75,10 +79,10 @@ function Get-Applications {
             if ([string]::IsNullOrWhiteSpace($_.UninstallString)) { return }
             if ($_.UninstallString -match '\{[A-Fa-f0-9\-]{36}\}') {
                 $apps.Add([PSCustomObject]@{
-                    ApplicationName = $_.DisplayName
-                    ProductCode     = $Matches[0]
-                    UninstallString = $_.UninstallString
-                })
+                        ApplicationName = $_.DisplayName
+                        ProductCode     = $Matches[0]
+                        UninstallString = $_.UninstallString
+                    })
             }
         }
     }
@@ -242,7 +246,8 @@ function New-Package {
             Set-Content -Path (Join-Path $targetFolder "AppInfo.json") -Value (New-AppInfoJson $app) -Encoding UTF8
 
             $createdFolders.Add($targetFolder)
-        } catch {
+        }
+        catch {
             [System.Windows.Forms.MessageBox]::Show(
                 "Failed to generate package for: $($app.ApplicationName)`n`n$_",
                 "Error",
@@ -392,14 +397,14 @@ if ($script:allApps.Count -eq 0) {
                 </StackPanel>
                 <Border Grid.Column="1" Height="36" CornerRadius="6" Background="#EEEEEE" Margin="48,0,48,0">
                     <Grid>
-                        <TextBlock Text="🔍" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="14"/>
+                        <TextBlock Text="&#xE71E;" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="14" FontFamily="Segoe MDL2 Assets"/>
                         <TextBox x:Name="SearchBox" Margin="34,0,0,0" Background="Transparent" BorderThickness="0" VerticalAlignment="Center" FontSize="14" Foreground="#1A1C1C" Padding="0"/>
                     </Grid>
                 </Border>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border CornerRadius="14" Background="#D3E3FF" Padding="14,4" Height="28" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="📦" FontSize="13" VerticalAlignment="Center"/>
+                            <TextBlock Text="&#xE7B8;" FontSize="13" VerticalAlignment="Center" FontFamily="Segoe MDL2 Assets"/>
                             <TextBlock x:Name="HeaderAppCount" Margin="6,0,0,0" FontSize="12" FontWeight="500" Foreground="#001C39" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
@@ -428,8 +433,8 @@ if ($script:allApps.Count -eq 0) {
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Installed Applications" FontSize="20" FontWeight="600" Foreground="#1A1C1C" VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button x:Name="RefreshButton" Content="↻ Refresh" Style="{StaticResource SecondaryButton}"/>
-                                <Button x:Name="ExportButton" Content="↓ Export" Style="{StaticResource SecondaryButton}"/>
+                                <Button x:Name="RefreshButton" Content="&#xE72C; Refresh" Style="{StaticResource SecondaryButton}" FontFamily="Segoe MDL2 Assets"/>
+                                <Button x:Name="ExportButton" Content="&#xE118; Export" Style="{StaticResource SecondaryButton}" FontFamily="Segoe MDL2 Assets"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -598,7 +603,7 @@ if ($script:allApps.Count -eq 0) {
         <!-- ===== ALT BİLGİ ===== -->
         <Border Grid.Row="2" Background="#EEEEEE" BorderBrush="#C0C7D4" BorderThickness="0,1,0,0" Padding="32,0">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="#404752">
-                Made with <Run Text="❤️" FontSize="14"/> by <Hyperlink x:Name="FooterLink" NavigateUri="https://mertozsoy.com" Foreground="#005FAA" FontWeight="700" TextDecorations="None">Mert Ozsoy</Hyperlink>
+                Made with <Run Text="&#xEB51;" FontSize="14" FontFamily="Segoe MDL2 Assets"/> by <Hyperlink x:Name="FooterLink" NavigateUri="https://mertozsoy.com" Foreground="#005FAA" FontWeight="700" TextDecorations="None">Mert Ozsoy</Hyperlink>
             </TextBlock>
         </Border>
     </Grid>
@@ -612,7 +617,8 @@ if ($script:allApps.Count -eq 0) {
 $reader = [System.Xml.XmlNodeReader]::new($xaml)
 try {
     $window = [Windows.Markup.XamlReader]::Load($reader)
-} catch {
+}
+catch {
     Write-Host "XAML Load Error: $_" -ForegroundColor Red
     [System.Windows.Forms.MessageBox]::Show("Failed to load UI. Error: $_", "XAML Error")
     return
@@ -645,16 +651,16 @@ $selectAllCheckBox.IsThreeState = $true
 $AppDataGrid.Columns[0].Header = $selectAllCheckBox
 
 $selectAllCheckBox.Add_Checked({
-    if (-not $script:updatingSelectAll -and $selectAllCheckBox.IsChecked -eq $true) {
-        $AppDataGrid.SelectAll()
-    }
-})
+        if (-not $script:updatingSelectAll -and $selectAllCheckBox.IsChecked -eq $true) {
+            $AppDataGrid.SelectAll()
+        }
+    })
 
 $selectAllCheckBox.Add_Unchecked({
-    if (-not $script:updatingSelectAll) {
-        $AppDataGrid.SelectedItems.Clear()
-    }
-})
+        if (-not $script:updatingSelectAll) {
+            $AppDataGrid.SelectedItems.Clear()
+        }
+    })
 
 # Yuvarlak kartlarda içerik taşmasını önlemek için köşe kırpma uygula
 $leftCardBorder = $window.FindName("LeftCardBorder")
@@ -672,10 +678,10 @@ function Set-CardClip {
     $geometry.RadiusY = $radius
     $child.Clip = $geometry
     $child.Add_SizeChanged({
-        param($s, $e)
-        $a = [System.Windows.Media.VisualTreeHelper]::GetDescendantBounds($s)
-        $s.Clip.Rect = $a
-    })
+            param($s, $e)
+            $a = [System.Windows.Media.VisualTreeHelper]::GetDescendantBounds($s)
+            $s.Clip.Rect = $a
+        })
 }
 
 Set-CardClip $leftCardBorder
@@ -692,7 +698,8 @@ function Update-Grid {
     if ($view -and $view.CanFilter) {
         if ([string]::IsNullOrWhiteSpace($Filter)) {
             $view.Filter = $null
-        } else {
+        }
+        else {
             $view.Filter = {
                 param($item)
                 $item.ApplicationName -like "*$Filter*"
@@ -720,7 +727,8 @@ function Update-DetailsPanel {
         $detailUninstallCmd.Text = $app.UninstallString
         $safeName = Convert-ToSafeName $app.ApplicationName
         $detailPolicyName.Text = "Remove_$safeName"
-    } else {
+    }
+    else {
         $detailAppName.Text = "No application selected"
         $detailProductCode.Text = "-"
         $detailUninstallCmd.Text = "-"
@@ -732,9 +740,11 @@ function Update-DetailsPanel {
     $script:updatingSelectAll = $true
     if ($count -eq 0) {
         $selectAllCheckBox.IsChecked = $false
-    } elseif ($count -eq $totalCount) {
+    }
+    elseif ($count -eq $totalCount) {
         $selectAllCheckBox.IsChecked = $true
-    } else {
+    }
+    else {
         $selectAllCheckBox.IsChecked = $null
     }
     $script:updatingSelectAll = $false
@@ -755,7 +765,8 @@ function Invoke-GenerateDetectScripts {
             $safeName = Convert-ToSafeName $app.ApplicationName
             $outPath = Join-Path $folder "$safeName`_Detect.ps1"
             Set-Content -Path $outPath -Value (New-DetectContent $app) -Encoding UTF8
-        } catch {
+        }
+        catch {
             [System.Windows.Forms.MessageBox]::Show(
                 "Failed to generate detect script for: $($app.ApplicationName)`n`n$_",
                 "Error",
@@ -790,7 +801,8 @@ function Invoke-GenerateRemediateScripts {
             $safeName = Convert-ToSafeName $app.ApplicationName
             $outPath = Join-Path $folder "$safeName`_Remediate.ps1"
             Set-Content -Path $outPath -Value (New-RemediateContent $app) -Encoding UTF8
-        } catch {
+        }
+        catch {
             [System.Windows.Forms.MessageBox]::Show(
                 "Failed to generate remediation script for: $($app.ApplicationName)`n`n$_",
                 "Error",
@@ -876,61 +888,61 @@ $AppDataGrid.ContextMenu = $contextMenu
 #region Olay İşleyicileri
 
 $searchBox.Add_TextChanged({
-    Update-Grid -Filter $searchBox.Text.Trim()
-})
+        Update-Grid -Filter $searchBox.Text.Trim()
+    })
 
 $AppDataGrid.Add_PreviewMouseLeftButtonDown({
-    param($sender, $e)
-    $dep = $e.OriginalSource -as [System.Windows.DependencyObject]
-    if (-not $dep) { return }
-    $row = $null
-    $current = $dep
-    while ($current) {
-        $row = $current -as [System.Windows.Controls.DataGridRow]
-        if ($row) { break }
-        $current = [System.Windows.Media.VisualTreeHelper]::GetParent($current)
-    }
-    if ($row) {
-        $row.IsSelected = -not $row.IsSelected
-        $e.Handled = $true
-    }
-})
+        param($sender, $e)
+        $dep = $e.OriginalSource -as [System.Windows.DependencyObject]
+        if (-not $dep) { return }
+        $row = $null
+        $current = $dep
+        while ($current) {
+            $row = $current -as [System.Windows.Controls.DataGridRow]
+            if ($row) { break }
+            $current = [System.Windows.Media.VisualTreeHelper]::GetParent($current)
+        }
+        if ($row) {
+            $row.IsSelected = -not $row.IsSelected
+            $e.Handled = $true
+        }
+    })
 
 $AppDataGrid.Add_SelectionChanged({
-    Update-DetailsPanel
-})
+        Update-DetailsPanel
+    })
 
 $AppDataGrid.Add_PreviewMouseRightButtonDown({
-    param($sender, $e)
-    $source = $e.OriginalSource
-    $row = $null
-    $current = $source
-    while ($current -and -not $row) {
-        $row = $current -as [System.Windows.Controls.DataGridRow]
-        $current = [System.Windows.Media.VisualTreeHelper]::GetParent($current)
-    }
-    if ($row) {
-        if (-not $row.IsSelected) {
-            $AppDataGrid.SelectedItems.Clear()
-            $row.IsSelected = $true
+        param($sender, $e)
+        $source = $e.OriginalSource
+        $row = $null
+        $current = $source
+        while ($current -and -not $row) {
+            $row = $current -as [System.Windows.Controls.DataGridRow]
+            $current = [System.Windows.Media.VisualTreeHelper]::GetParent($current)
         }
-        $e.Handled = $true
-    }
-})
+        if ($row) {
+            if (-not $row.IsSelected) {
+                $AppDataGrid.SelectedItems.Clear()
+                $row.IsSelected = $true
+            }
+            $e.Handled = $true
+        }
+    })
 
 $copyProductCodeItem.Add_Click({
-    $selected = Get-SelectedApps
-    if (-not $selected -or @($selected).Count -eq 0) { return }
-    $text = ($selected | ForEach-Object { $_.ProductCode }) -join "`r`n"
-    [System.Windows.Clipboard]::SetText($text)
-})
+        $selected = Get-SelectedApps
+        if (-not $selected -or @($selected).Count -eq 0) { return }
+        $text = ($selected | ForEach-Object { $_.ProductCode }) -join "`r`n"
+        [System.Windows.Clipboard]::SetText($text)
+    })
 
 $copyUninstallItem.Add_Click({
-    $selected = Get-SelectedApps
-    if (-not $selected -or @($selected).Count -eq 0) { return }
-    $text = ($selected | ForEach-Object { $_.UninstallString }) -join "`r`n"
-    [System.Windows.Clipboard]::SetText($text)
-})
+        $selected = Get-SelectedApps
+        if (-not $selected -or @($selected).Count -eq 0) { return }
+        $text = ($selected | ForEach-Object { $_.UninstallString }) -join "`r`n"
+        [System.Windows.Clipboard]::SetText($text)
+    })
 
 $generateDetectItem.Add_Click({ Invoke-GenerateDetectScripts })
 $generateRemediateItem.Add_Click({ Invoke-GenerateRemediateScripts })
@@ -939,55 +951,55 @@ $generatePackageItem.Add_Click({ Invoke-GeneratePackage })
 $generatePackageButton.Add_Click({ Invoke-GeneratePackage })
 
 $copyGuidButton.Add_Click({
-    $selected = Get-SelectedApps
-    $app = if ($selected) { @($selected)[0] } else { $null }
-    if ($app) {
-        [System.Windows.Clipboard]::SetText($app.ProductCode)
-    }
-})
+        $selected = Get-SelectedApps
+        $app = if ($selected) { @($selected)[0] } else { $null }
+        if ($app) {
+            [System.Windows.Clipboard]::SetText($app.ProductCode)
+        }
+    })
 
 $copyCommandButton.Add_Click({
-    $selected = Get-SelectedApps
-    $app = if ($selected) { @($selected)[0] } else { $null }
-    if ($app) {
-        [System.Windows.Clipboard]::SetText($app.UninstallString)
-    }
-})
+        $selected = Get-SelectedApps
+        $app = if ($selected) { @($selected)[0] } else { $null }
+        if ($app) {
+            [System.Windows.Clipboard]::SetText($app.UninstallString)
+        }
+    })
 
 $openOutputFolderButton.Add_Click({
-    $folder = Select-Folder
-    if ($folder) { Invoke-Item $folder }
-})
+        $folder = Select-Folder
+        if ($folder) { Invoke-Item $folder }
+    })
 
 $refreshButton.Add_Click({
-    $script:allApps = Get-Applications
-    $AppDataGrid.ItemsSource = $script:allApps
-    $headerAppCount.Text = "$($script:allApps.Count) Apps"
-    Update-DetailsPanel
-    Update-Grid
-    [System.Windows.Forms.MessageBox]::Show("Application list refreshed successfully.", "Refreshed", "OK", "Information")
-})
+        $script:allApps = Get-Applications
+        $AppDataGrid.ItemsSource = $script:allApps
+        $headerAppCount.Text = "$($script:allApps.Count) Apps"
+        Update-DetailsPanel
+        Update-Grid
+        [System.Windows.Forms.MessageBox]::Show("Application list refreshed successfully.", "Refreshed", "OK", "Information")
+    })
 
 $exportButton.Add_Click({
-    $dlg = New-Object Microsoft.Win32.SaveFileDialog
-    $dlg.Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
-    $dlg.DefaultExt = ".csv"
-    $dlg.FileName = "InstalledApplications_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
-    if ($dlg.ShowDialog($window)) {
-        $view = [System.Windows.Data.CollectionViewSource]::GetDefaultView($AppDataGrid.ItemsSource)
-        $data = if ($view) { @($view) } else { @() }
-        if ($data.Count -eq 0) { return }
-        $data | Select-Object ApplicationName, ProductCode, UninstallString | Export-Csv -Path $dlg.FileName -NoTypeInformation -Encoding UTF8
-    }
-})
+        $dlg = New-Object Microsoft.Win32.SaveFileDialog
+        $dlg.Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+        $dlg.DefaultExt = ".csv"
+        $dlg.FileName = "InstalledApplications_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+        if ($dlg.ShowDialog($window)) {
+            $view = [System.Windows.Data.CollectionViewSource]::GetDefaultView($AppDataGrid.ItemsSource)
+            $data = if ($view) { @($view) } else { @() }
+            if ($data.Count -eq 0) { return }
+            $data | Select-Object ApplicationName, ProductCode, UninstallString | Export-Csv -Path $dlg.FileName -NoTypeInformation -Encoding UTF8
+        }
+    })
 
 # Footer link - tarayıcıda aç
 $footerLink = $window.FindName("FooterLink")
 $footerLink.Add_RequestNavigate({
-    param($sender, $e)
-    Start-Process $e.Uri.AbsoluteUri
-    $e.Handled = $true
-})
+        param($sender, $e)
+        Start-Process $e.Uri.AbsoluteUri
+        $e.Handled = $true
+    })
 
 #endregion Olay İşleyicileri
 

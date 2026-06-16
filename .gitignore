@@ -25,3 +25,6 @@ temp/
 
 # User-specific
 *.local
+
+# Exports folder
+exports/
